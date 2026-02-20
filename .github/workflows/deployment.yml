@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     # Trigger this job only if the workflow is triggered by a push to the main branch
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
 
     steps:
       # Workflow commands to mask sensitive strings in logs
