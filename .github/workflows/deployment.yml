@@ -85,6 +85,9 @@ jobs:
       - name: Output same text (masked)
         run: echo "Deploying to SAMPLE_STRING_ABC"
 
+      - name: Output secret
+        run: echo "secret1=${{ secrets.SECRET1 }}"
+
       - name: Output same text (secret)
         run: echo "Deploying to SOME_SECRET"
 
