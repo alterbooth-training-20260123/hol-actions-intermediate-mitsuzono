@@ -1,0 +1,93 @@
+name: .NET Web Application CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+# Concurrency to avoid multiple runs for the same ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Concurrency to avoid multiple builds for the same ref
+    # concurrency:
+    #   group: build-${{ github.ref }}
+    #   cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: dotnet build
+        run: |
+          dotnet restore SampleWebAppForActions.slnx
+          dotnet build SampleWebAppForActions.slnx --configuration Release
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-app
+          path: |
+            src/SampleWebAppForActions/bin/Release
+            tests/SampleWebAppForActions.Test/bin/Release
+
+  test:
+    runs-on: ubuntu-latest
+    # Jobs dependency
+    needs: build
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: dotnet-app
+          path: .
+
+      - name: dotnet test
+        run: |
+          dotnet test SampleWebAppForActions.slnx --configuration Release --no-build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    # Trigger this job only if the workflow is triggered by a push to the main branch
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      # Workflow commands to mask sensitive strings in logs
+      - name: Mask sensitive text
+        run: echo "::add-mask::${{ vars.MY_VAR }}"
+
+      - name: Output masked text
+        run: echo "Deploying to ${{ vars.MY_VAR }}"
+
+      - name: Output same text (masked)
+        run: echo "Deploying to SAMPLE_STRING_ABC"
+
+      - name: Output same text (secret)
+        run: echo "Deploying to SOME_SECRET"
+
+      - name: Is local act run
+        if: ${{ env.ACT }}
+        run: echo "This is a local act run"

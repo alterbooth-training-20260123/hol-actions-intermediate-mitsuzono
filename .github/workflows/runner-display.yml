@@ -1,0 +1,45 @@
+# https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
+name: Runner display
+
+on:
+#   schedule:
+#     - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  runner-info:
+    strategy:
+      matrix:
+        # https://github.com/actions/runner-images
+        os: [ ubuntu-latest, ubuntu-slim, ubuntu-24.04, ubuntu-22.04, windows-latest, windows-2025, windows-2025-vs2026, windows-2022, windows-2019, macos-latest, macos-26, macos-15, macos-14 ]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 3
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c #v6.0.0
+        with:
+          python-version: 3.x
+          
+      - name: Display OS info (Windows)
+        if: startsWith(matrix.os, 'windows') == true
+        run: |
+          $OS_INFO=python -c "import platform; print(platform.system())"
+          $RELEASE_INFO=python -c "import platform; print(platform.release())"
+          $VERSION_INFO=python -c "import platform; print(platform.version())"
+          $MACHINE_INFO=python -c "import platform; print(platform.machine())"
+          $PROCESSOR_INFO=python -c "import platform; print(platform.processor())"
+          echo "| Runner | OS | Release | Version | Machine | Processor |" >> $env:GITHUB_STEP_SUMMARY
+          echo "| --- | --- | --- | --- | --- | --- |" >> $env:GITHUB_STEP_SUMMARY
+          echo "| ${{ matrix.os }} | $OS_INFO | $RELEASE_INFO | $VERSION_INFO | $MACHINE_INFO | $PROCESSOR_INFO |" >> $env:GITHUB_STEP_SUMMARY
+          
+      - name: Display OS info (macOS, Linux)
+        if: startsWith(matrix.os, 'windows') == false
+        run: |
+          OS_INFO=$(python -c "import platform; print(platform.system())")
+          RELEASE_INFO=$(python -c "import platform; print(platform.release())")
+          VERSION_INFO=$(python -c "import platform; print(platform.version())")
+          MACHINE_INFO=$(python -c "import platform; print(platform.machine())")
+          PROCESSOR_INFO=$(python -c "import platform; print(platform.processor())")
+          echo "| Runner | OS | Release | Version | Machine | Processor |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- | --- | --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ matrix.os }} | $OS_INFO | $RELEASE_INFO | $VERSION_INFO | $MACHINE_INFO | $PROCESSOR_INFO |" >> $GITHUB_STEP_SUMMARY

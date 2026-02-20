@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/SampleWebAppForActions/SampleWebAppForActions.csproj" />
+  <Project Path="tests/SampleWebAppForActions.Test/SampleWebAppForActions.Test.csproj" />
+</Solution>
