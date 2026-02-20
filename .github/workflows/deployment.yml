@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'
+      - update-workflow
+    # paths:
+    #   - 'src/**'
   workflow_dispatch:
 
 # Concurrency to avoid multiple runs for the same ref
